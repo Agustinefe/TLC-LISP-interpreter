@@ -376,6 +376,13 @@
 (defn controlar-aridad
   "Si la longitud de una lista dada es la esperada, devuelve esa longitud.
    Si no, devuelve una lista con un mensaje de error (una lista con *error* como primer elemento)."
+    ([seq ari]
+        (cond 
+            (< (count seq) ari) (list '*error* 'too-few-args)
+            (> (count seq) ari) (list '*error* 'too-many-args)
+            :else ari
+        )
+    )
 )
 
 

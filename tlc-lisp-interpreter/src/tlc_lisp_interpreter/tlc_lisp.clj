@@ -512,6 +512,14 @@
   )
 )
 
+(defn actualizar-amb-aux
+  [amb_v k pos_k v]
+    (cond 
+      (error? v) amb_v
+      (= -1 pos_k) (conj amb_v k v)
+      :else (assoc amb_v (inc pos_k) v)
+    )
+)
 
 ; user=> (actualizar-amb '(a 1 b 2 c 3) 'd 4)
 ; (a 1 b 2 c 3 d 4)
@@ -524,6 +532,8 @@
 (defn actualizar-amb
   "Devuelve un ambiente actualizado con una clave (nombre de la variable o funcion) y su valor. 
   Si el valor es un error, el ambiente no se modifica. De lo contrario, se le carga o reemplaza el valor."
+  [amb k v]
+    (reverse (into (list) (actualizar-amb-aux (into [] amb) k (.indexOf amb k) v)))
 )
 
 

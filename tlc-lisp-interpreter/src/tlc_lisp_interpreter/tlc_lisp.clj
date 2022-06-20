@@ -489,6 +489,9 @@
 ; nil
 (defn revisar-fnc
   "Si la lista es un mensaje de error, lo devuelve; si no, devuelve nil."
+  ([fnc]
+    (if (error? fnc) fnc nil)
+  )
 )
 
 
@@ -504,6 +507,9 @@
 ; (*error* too-few-args)
 (defn revisar-lae
   "Devuelve el primer elemento que es un mensaje de error. Si no hay ninguno, devuelve nil."
+  ([lae]
+    (peek (filter error? lae))
+  )
 )
 
 

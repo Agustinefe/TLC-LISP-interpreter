@@ -385,6 +385,48 @@
     )
 )
 
+(defn cast_alphabetical_symbol_to_uppercase
+  ([sym]
+    (case sym
+      'a 'A
+      'b 'B
+      'c 'C
+      'd 'D
+      'e 'E
+      'f 'F
+      'g 'G
+      'h 'H
+      'i 'I
+      'j 'J
+      'k 'K
+      'l 'L
+      'm 'M
+      'n 'N
+      'o 'O
+      'p 'P
+      'q 'Q
+      'r 'R
+      's 'S
+      't 'T
+      'u 'U
+      'v 'V
+      'w 'W
+      'x 'X
+      'y 'Y
+      'z 'Z
+      sym
+    )
+  )
+
+)
+
+(defn mutar
+
+  ([elem]
+    (cast_alphabetical_symbol_to_uppercase elem)
+  )
+
+)
 
 ; user=> (igual? 1 1)
 ; true
@@ -394,27 +436,27 @@
 ; true
 ; user=> (igual? 'A 'A)
 ; true
-; user=> (igual? 'a 'A)
+; user=> (igual? 'a 'A) VER
 ; true
-; user=> (igual? 'A 'a)
+; user=> (igual? 'A 'a) VER
 ; true
 ; user=> (igual? 'a 'b)
 ; false
-; user=> (igual? '(a b c) '(A B C))
+; user=> (igual? '(a b c) '(A B C)) VER
 ; true
 ; user=> (igual? '(a b c) '(A B D))
 ; false
 ; user=> (igual? nil nil)
 ; true
-; user=> (igual? nil 'NIL)
+; user=> (igual? nil 'NIL) VER
 ; true
-; user=> (igual? 'NIL nil)
+; user=> (igual? 'NIL nil) VER
 ; true
-; user=> (igual? 'NIL 'NIL)
+; user=> (igual? 'NIL 'NIL) VER
 ; true
-; user=> (igual? nil ())
+; user=> (igual? nil ()) VER
 ; true
-; user=> (igual? 'NIL ())
+; user=> (igual? 'NIL ()) VER
 ; true
 ; user=> (igual? () ())
 ; true
@@ -430,6 +472,11 @@
 ; false
 (defn igual?
   "Verifica la igualdad entre dos elementos al estilo de TLC-LISP (case-insensitive)."
+  ([left right]
+    (
+
+    )
+  )
 )
 
 

@@ -385,11 +385,13 @@
     )
 )
 
+(defn uppercase-symbol [sym] (symbol (.toUpperCase (str sym))))
+
 (defn mutar
   ([elem]
     (cond 
       (list? elem) (if (empty? elem) nil (map mutar elem))
-      (symbol? elem) (if (= 'NIL elem) nil (symbol (.toUpperCase (str elem))))
+      (symbol? elem) (if (= 'NIL elem) nil (uppercase-symbol elem))
       :else elem
     )
   )
@@ -465,6 +467,13 @@
 ; false
 (defn error?
   "Devuelve true o false, segun sea o no el arg. un mensaje de error (una lista con *error* como primer elemento)."
+  ([err]
+    (cond
+      ((comp not list?) err) false ; no es lista
+      (not (symbol? (nth err 0))) false ; el primer elemento no es symbol
+      :else (= '*ERROR* (uppercase-symbol (nth err 0)))
+    )
+  )
 )
 
 

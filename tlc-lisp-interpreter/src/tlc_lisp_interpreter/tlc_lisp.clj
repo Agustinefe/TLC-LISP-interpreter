@@ -385,47 +385,14 @@
     )
 )
 
-(defn cast_alphabetical_symbol_to_uppercase
-  ([sym]
-    (case sym
-      'a 'A
-      'b 'B
-      'c 'C
-      'd 'D
-      'e 'E
-      'f 'F
-      'g 'G
-      'h 'H
-      'i 'I
-      'j 'J
-      'k 'K
-      'l 'L
-      'm 'M
-      'n 'N
-      'o 'O
-      'p 'P
-      'q 'Q
-      'r 'R
-      's 'S
-      't 'T
-      'u 'U
-      'v 'V
-      'w 'W
-      'x 'X
-      'y 'Y
-      'z 'Z
-      sym
+(defn mutar
+  ([elem]
+    (cond 
+      (list? elem) (if (empty? elem) nil (map mutar elem))
+      (symbol? elem) (if (= 'NIL elem) nil (symbol (.toUpperCase (str elem))))
+      :else elem
     )
   )
-
-)
-
-(defn mutar
-
-  ([elem]
-    (cast_alphabetical_symbol_to_uppercase elem)
-  )
-
 )
 
 ; user=> (igual? 1 1)
@@ -438,7 +405,7 @@
 ; true
 ; user=> (igual? 'a 'A) VER
 ; true
-; user=> (igual? 'A 'a) VER
+; user=> (igual? 'a 'A) VER
 ; true
 ; user=> (igual? 'a 'b)
 ; false
@@ -473,9 +440,7 @@
 (defn igual?
   "Verifica la igualdad entre dos elementos al estilo de TLC-LISP (case-insensitive)."
   ([left right]
-    (
-
-    )
+      (= (mutar left) (mutar right))
   )
 )
 

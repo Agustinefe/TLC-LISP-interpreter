@@ -512,6 +512,9 @@
   )
 )
 
+(defn amb-keys [amb] (take-nth 2 amb))
+(defn amb-values [amb] (take-nth 2 (rest amb)))
+
 (defn actualizar-amb-aux
   [amb_v k pos_k v]
     (cond 
@@ -544,6 +547,12 @@
 (defn buscar
   "Busca una clave en un ambiente (una lista con claves en las posiciones impares [1, 3, 5...] y valores en las pares [2, 4, 6...]
    y devuelve el valor asociado. Devuelve un mensaje de error si no la encuentra."
+  [k amb]
+    ()
+    (if (= -1 (.indexOf (amb-keys amb) k))
+      (list '*error* 'unbound-symbol k)
+      (nth (amb-values amb) (.indexOf (amb-keys amb) k))
+    )  
 )
 
 ; user=> (fnc-append '( (1 2) ))

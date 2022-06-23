@@ -555,6 +555,8 @@
     )  
 )
 
+(defn if_empty_nil [l] (if (empty? l) nil l))
+
 ; user=> (fnc-append '( (1 2) ))
 ; (*error* too-few-args)
 ; user=> (fnc-append '( (1 2) (3) (4 5) (6 7) ))
@@ -575,6 +577,16 @@
 ; nil
 (defn fnc-append
   "Devuelve el resultado de fusionar 2 sublistas."
+  [subl]
+  (cond
+    (> 2 (count subl)) (list '*error* 'too-few-args)
+    (< 2 (count subl)) (list '*error* 'too-many-args)
+    (nil? (nth subl 0)) (nth subl 1)
+    (nil? (nth subl 1)) (nth subl 0)
+    ((comp not list?) (nth subl 0)) (list '*error* 'list 'expected (nth subl 0))
+    ((comp not list?) (nth subl 1)) (list '*error* 'list 'expected (nth subl 1))
+    :else (if_empty_nil (concat (nth subl 0) (nth subl 1)))
+  )
 )
 
 

@@ -387,7 +387,8 @@
     )
 )
 
-(defn uppercase-symbol [sym] (symbol (.toUpperCase (str sym))))
+(defn uppercase-symbol [sym] (if (symbol? sym) (symbol (.toUpperCase (str sym))) (list '*error* 'symbol-expected sym)))
+(defn lowercase-symbol [sym] (if (symbol? sym) (symbol (.toLowerCase (str sym))) (list '*error* 'symbol-expected sym)))
 
 (defn mutar
   ([elem]
@@ -867,6 +868,11 @@
   )
 )						
 
+(defn get-from-amb [amb k] (let [i (.indexOf (amb-keys amb) k)] (if (= -1 i) k (nth (amb-values amb) i))))
+
+
+;(defn amb-keys [amb] (take-nth 2 amb))
+;(defn amb-values [amb] (take-nth 2 (rest amb)))
 
 ; user=> (evaluar-escalar 32 '(v 1 w 3 x 6) '(x 5 y 11 z "hola"))
 ; (32 (v 1 w 3 x 6))
@@ -884,8 +890,43 @@
 ; ((*error* unbound-symbol n) (v 1 w 3 x 6))
 (defn evaluar-escalar
   "Evalua una expresion escalar consultando, si corresponde, los ambientes local y global. Devuelve una lista con el resultado y un ambiente."
+  [k env_global env_local]
+  (let [sym (lowercase-symbol k)] 
+    (cond
+      ((comp not list?) env_global) (list '*error* 'list 'expected env_global)
+      ((comp not list?) env_local) (list '*error* 'list 'expected env_local)
+      ((comp not symbol?) sym) (list k env_global)
+      (not= sym (get-from-amb env_local sym)) (list (get-from-amb env_local sym) env_local)
+      (not= sym (get-from-amb env_global sym)) (list (get-from-amb env_global sym) env_global)
+      :else (list '*error* 'unbound-symbol k)
+    )
+  )
 )
 
+(defn amb? [amb] (
+  cond
+    ((comp not list?) amb) false
+    (odd? (count amb)) false
+    :else true
+))
+
+(defn chequear-forma-de [form]
+  (cond
+    ((comp not list?) form) (list '*error* 'list 'expected form)
+    (> 3 (count form)) (list '*error* 'list 'expected 'nil)
+    (not= 'de (first form)) (list '*error* 'de 'expected (first form))
+    (nil? (nth form 1)) (list '*error* 'cannot-set (nth form 1))
+    ((comp not symbol?) (nth form 1)) (list '*error* 'symbol 'expected (nth form 1))
+    ((comp not list?) (nth form 2)) (list '*error* 'list 'expected (nth form 2))
+    :else form
+  )
+)
+
+(defn evaluar-de-aux [form amb]
+  (let [sym (nth form 1) body ((comp pop pop) form)]
+    (list sym (concat amb (list sym (concat '(lambda) body))))
+  )
+)
 
 ; user=> (evaluar-de '(de f (x)) '(x 1))
 ; (f (x 1 f (lambda (x))))
@@ -915,6 +956,14 @@
 ; ((*error* cannot-set nil) (x 1))
 (defn evaluar-de
   "Evalua una forma 'de'. Devuelve una lista con el resultado y un ambiente actualizado con la definicion."
+  [maybe_form amb]
+  (let [form (chequear-forma-de maybe_form)]
+    (cond
+      ((comp not amb?) amb) (list '*error* 'list 'expected amb)
+      (error? form) (list form amb)
+      :else (evaluar-de-aux form amb)
+    )
+  )
 )
 
 

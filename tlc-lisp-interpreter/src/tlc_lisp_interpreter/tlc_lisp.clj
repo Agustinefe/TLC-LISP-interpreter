@@ -602,7 +602,8 @@
     ((comp not list?) env_args) (list '*error* 'list 'expected env_args)
     ((comp not list?) env_global) (list '*error* 'list 'expected env_global)
     ((comp not list?) env_local) (list '*error* 'list 'expected env_local)
-
+    ((comp not empty?) env_args) (list '*error* 'too-many-args)
+    :else (concat env_global env_local)
   )
 )
 

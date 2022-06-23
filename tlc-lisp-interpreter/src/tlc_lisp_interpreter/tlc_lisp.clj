@@ -638,6 +638,7 @@
   )
 )
 
+(defn check-no-args [args])
 
 ; user=> (fnc-read ())
 ; 1
@@ -685,6 +686,12 @@
 ; (*error* not-implemented)
 (defn fnc-terpri
   "Imprime un salto de línea y devuelve nil."
+  [args]
+  (cond
+    ((comp not list?) args) (list '*error* 'not-implemented)
+    ((comp not empty?) args) (list '*error* 'not-implemented)
+    :else (do (println) nil)
+  )
 ) 
 
 

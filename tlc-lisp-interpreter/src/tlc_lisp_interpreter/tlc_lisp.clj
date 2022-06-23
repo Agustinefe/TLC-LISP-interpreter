@@ -378,6 +378,8 @@
    Si no, devuelve una lista con un mensaje de error (una lista con *error* como primer elemento)."
     ([seq ari]
         (cond 
+            ((comp not list?) seq) (list '*error* 'list 'expected seq)
+            ((comp not number?) ari) (list '*error* 'number 'expected ari)
             (< (count seq) ari) (list '*error* 'too-few-args)
             (> (count seq) ari) (list '*error* 'too-many-args)
             :else ari
@@ -579,8 +581,13 @@
 (defn fnc-append
   "Devuelve el resultado de fusionar 2 sublistas."
   [subl]
+  (let [ari (controlar-aridad subl 1)]
+    (cond
+      (seq? ari) ari
+      (or (seq? (first lae)) (igual? (first lae) nil)) (count (first lae))
+      :else (list '*error* 'arg-wrong-type (first lae)))))
   (cond
-    ((comp not subl?) l) (list '*error* 'list 'expected subl)
+    ((comp not list?) subl) (list '*error* 'list 'expected subl)
     (> 2 (count subl)) (list '*error* 'too-few-args)
     (< 2 (count subl)) (list '*error* 'too-many-args)
     (nil? (nth subl 0)) (nth subl 1)
@@ -830,7 +837,7 @@
 ; (*error* too-many-args)
 (defn fnc-ge
     "Devuelve t si el primer numero es mayor o igual que el segundo; si no, nil."
-      [args]
+    [args]
     (cond
       ((comp not list?) args) (list '*error* 'list 'expected args)
       (> 2 (count args)) (list '*error* 'too-few-args)

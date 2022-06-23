@@ -630,6 +630,12 @@
 ; (*error* too-many-args)
 (defn fnc-equal
   "Compara 2 elementos. Si son iguales, devuelve t. Si no, nil."
+  [l]
+  (cond
+    (> 2 (count l)) (list '*error* 'too-few-args)
+    (< 2 (count l)) (list '*error* 'too-many-args)
+    :else (if (igual? (nth l 0) (nth l 1)) 't nil)
+  )
 )
 
 

@@ -580,6 +580,7 @@
   "Devuelve el resultado de fusionar 2 sublistas."
   [subl]
   (cond
+    ((comp not subl?) l) (list '*error* 'list 'expected subl)
     (> 2 (count subl)) (list '*error* 'too-few-args)
     (< 2 (count subl)) (list '*error* 'too-many-args)
     (nil? (nth subl 0)) (nth subl 1)

@@ -581,20 +581,15 @@
 (defn fnc-append
   "Devuelve el resultado de fusionar 2 sublistas."
   [subl]
-  (let [ari (controlar-aridad subl 1)]
+  (let [ari (controlar-aridad subl 2)]
     (cond
       (seq? ari) ari
-      (or (seq? (first lae)) (igual? (first lae) nil)) (count (first lae))
-      :else (list '*error* 'arg-wrong-type (first lae)))))
-  (cond
-    ((comp not list?) subl) (list '*error* 'list 'expected subl)
-    (> 2 (count subl)) (list '*error* 'too-few-args)
-    (< 2 (count subl)) (list '*error* 'too-many-args)
-    (nil? (nth subl 0)) (nth subl 1)
-    (nil? (nth subl 1)) (nth subl 0)
-    ((comp not list?) (nth subl 0)) (list '*error* 'list 'expected (nth subl 0))
-    ((comp not list?) (nth subl 1)) (list '*error* 'list 'expected (nth subl 1))
-    :else (if_empty_nil (concat (nth subl 0) (nth subl 1)))
+      (nil? (nth subl 0)) (nth subl 1)
+      (nil? (nth subl 1)) (nth subl 0)
+      ((comp not list?) (nth subl 0)) (list '*error* 'list 'expected (nth subl 0))
+      ((comp not list?) (nth subl 1)) (list '*error* 'list 'expected (nth subl 1))
+      :else (if_empty_nil (concat (nth subl 0) (nth subl 1)))
+    )
   )
 )
 
@@ -639,11 +634,11 @@
 (defn fnc-equal
   "Compara 2 elementos. Si son iguales, devuelve t. Si no, nil."
   [args]
-  (cond
-    ((comp not list?) args) (list '*error* 'list 'expected args)
-    (> 2 (count args)) (list '*error* 'too-few-args)
-    (< 2 (count args)) (list '*error* 'too-many-args)
-    :else (if (igual? (nth args 0) (nth args 1)) 't nil)
+  (let [ari (controlar-aridad args 2)]
+    (cond
+      (seq? ari) ari
+      :else (if (igual? (nth args 0) (nth args 1)) 't nil)
+    )
   )
 )
 

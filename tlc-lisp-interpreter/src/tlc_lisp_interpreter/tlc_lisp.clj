@@ -694,6 +694,7 @@
   )
 ) 
 
+(defn first-match [l func] (first (filter func l)))
 
 ; user=> (fnc-add ())
 ; (*error* too-few-args)
@@ -713,6 +714,13 @@
 ; (*error* number-expected A)
 (defn fnc-add
   "Suma los elementos de una lista. Minimo 2 elementos."
+  [addends]
+  (cond
+    ((comp not list?) addends) (list '*error* 'list 'expected)
+    (empty? addends) (list '*error* 'too-few-args)
+    (not-every? number? addends) (list '*error* 'number-expected (first-match addends (comp not number?)))
+    :else (reduce + addends)
+  )
 )
 
 
@@ -734,6 +742,13 @@
 ; (*error* number-expected A)
 (defn fnc-sub
   "Resta los elementos de un lista. Minimo 1 elemento."
+  [subtrahend]
+  (cond
+    ((comp not list?) subtrahend) (list '*error* 'list 'expected)
+    (empty? subtrahend) (list '*error* 'too-few-args)
+    (not-every? number? subtrahend) (list '*error* 'number-expected (first-match subtrahend (comp not number?)))
+    :else (reduce - subtrahend)
+  )
 )
 
 

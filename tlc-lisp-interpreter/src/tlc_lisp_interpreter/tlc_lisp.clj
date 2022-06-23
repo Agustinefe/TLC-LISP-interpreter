@@ -631,12 +631,12 @@
 ; (*error* too-many-args)
 (defn fnc-equal
   "Compara 2 elementos. Si son iguales, devuelve t. Si no, nil."
-  [l]
+  [args]
   (cond
-    ((comp not list?) l) (list '*error* 'list 'expected l)
-    (> 2 (count l)) (list '*error* 'too-few-args)
-    (< 2 (count l)) (list '*error* 'too-many-args)
-    :else (if (igual? (nth l 0) (nth l 1)) 't nil)
+    ((comp not list?) args) (list '*error* 'list 'expected args)
+    (> 2 (count args)) (list '*error* 'too-few-args)
+    (< 2 (count args)) (list '*error* 'too-many-args)
+    :else (if (igual? (nth args 0) (nth args 1)) 't nil)
   )
 )
 
@@ -772,6 +772,12 @@
 ; (*error* too-many-args)
 (defn fnc-lt
     "Devuelve t si el primer numero es menor que el segundo; si no, nil."
+    [l]
+    (cond
+      ((comp not list?) l) (list '*error* 'list 'expected l)
+      (> 2 (count l)) (list '*error* 'too-few-args)
+      (< 2 (count l)) (list '*error* 'too-many-args)
+    )
 )
 
 

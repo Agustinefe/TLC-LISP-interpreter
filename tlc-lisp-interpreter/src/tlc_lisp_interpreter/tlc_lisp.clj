@@ -772,11 +772,13 @@
 ; (*error* too-many-args)
 (defn fnc-lt
     "Devuelve t si el primer numero es menor que el segundo; si no, nil."
-    [l]
+    [args]
     (cond
-      ((comp not list?) l) (list '*error* 'list 'expected l)
-      (> 2 (count l)) (list '*error* 'too-few-args)
-      (< 2 (count l)) (list '*error* 'too-many-args)
+      ((comp not list?) args) (list '*error* 'list 'expected args)
+      (> 2 (count args)) (list '*error* 'too-few-args)
+      (< 2 (count args)) (list '*error* 'too-many-args)
+      (not-every? number? args) (list '*error* 'number-expected (first-match args (comp not number?)))
+      :else (if (< (nth args 0) (nth args 1)) 't nil)
     )
 )
 

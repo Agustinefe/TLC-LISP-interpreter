@@ -667,6 +667,12 @@
 ; (*error* not-implemented)
 (defn fnc-read
   "Devuelve la lectura de un elemento de TLC-LISP desde la terminal/consola."
+  [args]
+  (cond
+    ((comp not list?) args) (list '*error* 'not-implemented)
+    ((comp not empty?) args) (list '*error* 'not-implemented)
+    :else (read-line)
+  )
 )
 
 

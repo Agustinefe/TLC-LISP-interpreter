@@ -391,7 +391,7 @@
   ([elem]
     (cond 
       (list? elem) (if (empty? elem) nil (map mutar elem))
-      (symbol? elem) (if (= 'NIL elem) nil (uppercase-symbol elem))
+      (symbol? elem) (if (= 'NIL (uppercase-symbol elem)) nil (uppercase-symbol elem))
       :else elem
     )
   )
@@ -556,6 +556,7 @@
 )
 
 (defn if_empty_nil [l] (if (empty? l) nil l))
+(defn if_not_list_error [l] ((comp not list?) l) (list '*error* 'list 'expected l))
 
 ; user=> (fnc-append '( (1 2) ))
 ; (*error* too-few-args)
@@ -596,6 +597,13 @@
 ; (*error* too-many-args)
 (defn fnc-env
   "Devuelve la fusion de los ambientes global y local."
+  [env_args env_global env_local]
+  (cond
+    ((comp not list?) env_args) (list '*error* 'list 'expected env_args)
+    ((comp not list?) env_global) (list '*error* 'list 'expected env_global)
+    ((comp not list?) env_local) (list '*error* 'list 'expected env_local)
+
+  )
 )
 
 

@@ -732,7 +732,7 @@
   [addends]
   (cond
     ((comp not list?) addends) (list '*error* 'list 'expected)
-    (empty? addends) (list '*error* 'too-few-args)
+    (> 2 (count addends)) (list '*error* 'too-few-args)
     (not-every? number? addends) (list '*error* 'number-expected (first-match addends (comp not number?)))
     :else (reduce + addends)
   )
@@ -762,6 +762,7 @@
     ((comp not list?) subtrahend) (list '*error* 'list 'expected)
     (empty? subtrahend) (list '*error* 'too-few-args)
     (not-every? number? subtrahend) (list '*error* 'number-expected (first-match subtrahend (comp not number?)))
+    (= 1 (count subtrahend)) (- (nth subtrahend 0))
     :else (reduce - subtrahend)
   )
 )
@@ -849,7 +850,7 @@
       (> 2 (count args)) (list '*error* 'too-few-args)
       (< 2 (count args)) (list '*error* 'too-many-args)
       (not-every? number? args) (list '*error* 'number-expected (first-match args (comp not number?)))
-      :else (if (<= (nth args 0) (nth args 1)) 't nil)
+      :else (if (>= (nth args 0) (nth args 1)) 't nil)
     )
 )
 
@@ -878,9 +879,6 @@
   )
 )						
 
-;(defn amb-keys [amb] (take-nth 2 amb))
-;(defn amb-values [amb] (take-nth 2 (rest amb)))
-
 ; user=> (evaluar-escalar 32 '(v 1 w 3 x 6) '(x 5 y 11 z "hola"))
 ; (32 (v 1 w 3 x 6))
 ; user=> (evaluar-escalar "chau" '(v 1 w 3 x 6) '(x 5 y 11 z "hola"))
@@ -903,9 +901,9 @@
       ((comp not list?) env_global) (list '*error* 'list 'expected env_global)
       ((comp not list?) env_local) (list '*error* 'list 'expected env_local)
       ((comp not symbol?) sym) (list k env_global)
-      (not= sym (get-from-amb env_local sym)) (list (get-from-amb env_local sym) env_local)
+      (not= sym (get-from-amb env_local sym)) (list (get-from-amb env_local sym) env_global)
       (not= sym (get-from-amb env_global sym)) (list (get-from-amb env_global sym) env_global)
-      :else (list '*error* 'unbound-symbol k)
+      :else (list (list '*error* 'unbound-symbol k) env_global)
     )
   )
 )
@@ -916,8 +914,8 @@
     (> 3 (count form)) (list '*error* 'list 'expected 'nil)
     (not= 'de (first form)) (list '*error* 'de 'expected (first form))
     (nil? (nth form 1)) (list '*error* 'cannot-set (nth form 1))
-    ((comp not symbol?) (nth form 1)) (list '*error* 'symbol 'expected (nth form 1))
     ((comp not list?) (nth form 2)) (list '*error* 'list 'expected (nth form 2))
+    ((comp not symbol?) (nth form 1)) (list '*error* 'symbol 'expected (nth form 1))
     :else form
   )
 )

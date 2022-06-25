@@ -2,6 +2,15 @@
   (:require [clojure.test :refer :all]
             [tlc-lisp-interpreter.core :refer :all]))
 
+; Template
+;
+;(deftest funcname-test
+;  (testing "Test description"
+;    (is (some assert))
+;  )
+;)
+
+
 (deftest controlar-aridad-test
   (testing "Control de buena aridad"
     (is (= 3 (controlar-aridad '(a b c) 3)))
@@ -48,5 +57,19 @@
     (is (false? (igual? "a" "A")))
     (is (false? (igual? 'a "a")))
     (is (false? (igual? 'a "A")))
+  )
+)
+
+(deftest error?-test
+  (testing "Every case"
+    (is (true? (error? '(*error* too-few-args))))
+    (is (true? (error? (list '*error* 'too-few-args))))
+    (is (true? (error? (list '*ERROR* 'too-few-args))))
+    (is (true? (error? (list '*Error* 'too-few-args))))
+    (is (true? (error? (list '*error*))))
+    (is (false? (error? (list 'too-few-args))))
+    (is (false? (error? '*error*)))
+    (is (false? (error? ())))
+    (is (false? (error? nil)))
   )
 )

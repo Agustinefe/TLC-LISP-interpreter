@@ -473,6 +473,7 @@
   ([err]
     (cond
       ((comp not list?) err) false ; no es lista
+      (empty? err) false
       (not (symbol? (nth err 0))) false ; el primer elemento no es symbol
       :else (= '*ERROR* (uppercase-symbol (nth err 0)))
     )

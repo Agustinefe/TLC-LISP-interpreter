@@ -364,6 +364,40 @@
 	         (do (prn) (flush) orig)
 		        (do (pr (first lis)) (print " ") (imprimir (next lis) orig)))))
 
+; FUNCIONES AUXILIARES
+
+(defn uppercase-symbol [sym] (if (symbol? sym) (symbol (.toUpperCase (str sym))) (list '*error* 'symbol-expected sym)))
+
+(defn lowercase-symbol [sym] (if (symbol? sym) (symbol (.toLowerCase (str sym))) (list '*error* 'symbol-expected sym)))
+
+(defn mutar
+  ([elem]
+    (cond 
+      (list? elem) (if (empty? elem) nil (map mutar elem))
+      (symbol? elem) (if (= 'NIL (uppercase-symbol elem)) nil (uppercase-symbol elem))
+      :else elem
+    )
+  )
+)
+
+(defn amb-keys [amb] (take-nth 2 amb))
+
+(defn amb-values [amb] (take-nth 2 (rest amb)))
+
+(defn if_empty_nil [l] (if (empty? l) nil l))
+
+(defn if_not_list_error [l] ((comp not list?) l) (list '*error* 'list 'expected l))
+
+(defn first-match [l func] (first (filter func l)))
+
+(defn get-from-amb [amb k] (let [i (.indexOf (amb-keys amb) k)] (if (= -1 i) k (nth (amb-values amb) i))))
+
+(defn amb? [amb] (
+  cond
+    ((comp not list?) amb) false
+    (odd? (count amb)) false
+    :else true
+))
 
 ; FUNCIONES QUE DEBEN SER IMPLEMENTADAS PARA COMPLETAR EL INTERPRETE DE TLC-LISP (ADEMAS DE COMPLETAR 'EVALUAR' Y 'APLICAR-FUNCION-PRIMITIVA'):
 
@@ -385,19 +419,6 @@
             :else ari
         )
     )
-)
-
-(defn uppercase-symbol [sym] (if (symbol? sym) (symbol (.toUpperCase (str sym))) (list '*error* 'symbol-expected sym)))
-(defn lowercase-symbol [sym] (if (symbol? sym) (symbol (.toLowerCase (str sym))) (list '*error* 'symbol-expected sym)))
-
-(defn mutar
-  ([elem]
-    (cond 
-      (list? elem) (if (empty? elem) nil (map mutar elem))
-      (symbol? elem) (if (= 'NIL (uppercase-symbol elem)) nil (uppercase-symbol elem))
-      :else elem
-    )
-  )
 )
 
 ; user=> (igual? 1 1)
@@ -448,7 +469,6 @@
       (= (mutar left) (mutar right))
   )
 )
-
 
 ; user=> (error? '(*error* too-few-args))
 ; true
@@ -512,12 +532,9 @@
 (defn revisar-lae
   "Devuelve el primer elemento que es un mensaje de error. Si no hay ninguno, devuelve nil."
   ([lae]
-    (peek (filter error? lae))
+    (first (filter error? lae))
   )
 )
-
-(defn amb-keys [amb] (take-nth 2 amb))
-(defn amb-values [amb] (take-nth 2 (rest amb)))
 
 (defn actualizar-amb-aux
   [amb_v k pos_k v]
@@ -543,7 +560,6 @@
     (reverse (into (list) (actualizar-amb-aux (into [] amb) k (.indexOf amb k) v)))
 )
 
-
 ; user=> (buscar 'c '(a 1 b 2 c 3 d 4 e 5))
 ; 3
 ; user=> (buscar 'f '(a 1 b 2 c 3 d 4 e 5))
@@ -558,9 +574,6 @@
       (nth (amb-values amb) (.indexOf (amb-keys amb) k))
     )  
 )
-
-(defn if_empty_nil [l] (if (empty? l) nil l))
-(defn if_not_list_error [l] ((comp not list?) l) (list '*error* 'list 'expected l))
 
 ; user=> (fnc-append '( (1 2) ))
 ; (*error* too-few-args)
@@ -644,8 +657,6 @@
   )
 )
 
-(defn check-no-args [args])
-
 ; user=> (fnc-read ())
 ; 1
 ; 1
@@ -699,8 +710,6 @@
     :else (do (println) nil)
   )
 ) 
-
-(defn first-match [l func] (first (filter func l)))
 
 ; user=> (fnc-add ())
 ; (*error* too-few-args)
@@ -869,9 +878,6 @@
   )
 )						
 
-(defn get-from-amb [amb k] (let [i (.indexOf (amb-keys amb) k)] (if (= -1 i) k (nth (amb-values amb) i))))
-
-
 ;(defn amb-keys [amb] (take-nth 2 amb))
 ;(defn amb-values [amb] (take-nth 2 (rest amb)))
 
@@ -903,13 +909,6 @@
     )
   )
 )
-
-(defn amb? [amb] (
-  cond
-    ((comp not list?) amb) false
-    (odd? (count amb)) false
-    :else true
-))
 
 (defn chequear-forma-de [form]
   (cond

@@ -61,7 +61,7 @@
 )
 
 (deftest error?-test
-  (testing "Every case"
+  (testing "Todos los casos"
     (is (true? (error? '(*error* too-few-args))))
     (is (true? (error? (list '*error* 'too-few-args))))
     (is (true? (error? (list '*ERROR* 'too-few-args))))
@@ -71,5 +71,28 @@
     (is (false? (error? '*error*)))
     (is (false? (error? ())))
     (is (false? (error? nil)))
+  )
+)
+
+(deftest revisar-fnc-test
+  (testing "Error"
+    (is (= '(*error* too-few-args) (revisar-fnc '(*error* too-few-args))))
+  )
+
+  (testing "Nil"
+    (is (nil? (revisar-fnc '(too-few-args))))
+    (is (nil? (revisar-fnc '*error*)))
+    (is (nil? (revisar-fnc nil)))
+    (is (nil? (revisar-fnc ())))
+  )
+)
+
+(deftest revisar-lae-test
+  (testing "Todos los casos"
+    (is (nil? (revisar-lae '(1 2 3))))
+    (is (nil? (revisar-lae nil)))
+    (is (nil? (revisar-lae ())))
+    (is (= '(*error* too-few-args) (revisar-lae '(1 (*error* too-few-args) 3))))
+    (is (= '(*error* too-few-args) (revisar-lae '(1 (*error* too-few-args) (*error* too-many-args) 3))))
   )
 )

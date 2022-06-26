@@ -110,7 +110,7 @@
 
         (igual? (first expre) 'cond)   (evaluar-cond expre amb-global amb-local)
         (igual? (first expre) 'de)     (evaluar-de expre amb-global)
-
+        (igual? (first expre) 'if)     (evaluar-if expre amb-global amb-local)
          ;
          ;
          ;
@@ -259,6 +259,27 @@
   [fnc lae amb-global amb-local]
   (cond
     (igual? fnc 'add)     (fnc-add lae)
+    (igual? fnc 'append)     (fnc-append lae)
+    (igual? fnc 'cons)     (fnc-cons lae)
+    (igual? fnc 'env)     (fnc-env lae amb-global amb-local)
+    (igual? fnc 'equal)     (fnc-equal lae)
+    (igual? fnc 'first)     (fnc-first lae)
+    (igual? fnc 'ge)     (fnc-ge lae)
+    (igual? fnc 'gt)     (fnc-gt lae)
+    (igual? fnc 'length)     (fnc-length lae)
+    (igual? fnc 'list)     (fnc-list lae)
+    (igual? fnc 'listp)     (fnc-listp lae)
+    (igual? fnc 'lt)     (fnc-lt lae)
+    (igual? fnc 'not)     (fnc-not lae)
+    (igual? fnc 'null)     (fnc-null lae)
+    (igual? fnc 'prin3)     (fnc-prin3 lae)
+    (igual? fnc 'read)     (fnc-read lae)
+    (igual? fnc 'rest)     (fnc-rest lae)
+    (igual? fnc 'reverse)     (fnc-reverse lae)
+    (igual? fnc 'sub)     (fnc-sub lae)
+    (igual? fnc 'terpri)     (fnc-terpri lae)
+    (igual? fnc '+)     (fnc-add lae)
+    (igual? fnc '-)     (fnc-sub lae)
 
     ; Las funciones primitivas reciben argumentos y retornan un valor (son puras)
 
@@ -689,7 +710,9 @@
   (cond
     ((comp not list?) args) (list '*error* 'not-implemented)
     ((comp not empty?) args) (list '*error* 'not-implemented)
-    :else (read-line)
+    :else (let [a (read-line)]
+      (if (= a "()") nil a)
+    )
   )
 )
 
@@ -920,7 +943,7 @@
   )
 )
 
-(defn evaluar-de-aux [form amb]
+(defn ligar [form amb]
   (let [sym (nth form 1) body ((comp pop pop) form)]
     (list sym (concat amb (list sym (concat '(lambda) body))))
   )
@@ -959,11 +982,43 @@
     (cond
       ((comp not amb?) amb) (list '*error* 'list 'expected amb)
       (error? form) (list form amb)
-      :else (evaluar-de-aux form amb)
+      :else (ligar form amb)
     )
   )
 )
 
+(defn chequear-forma-if 
+  ([form]
+    (cond
+      ((comp not list?) form) (list '*error* 'list 'expected form)
+      (> 2 (count form)) (list '*error* 'too-few-args)
+      (= 'if (nth form 0)) (list '*error* 'expected-if (nth form 0))
+      :else form
+    )
+  )
+)
+
+(defn ejecutar_if_aux 
+  ([amb_global amb_local c th el]
+    (let [c_evaluado (evaluar c)]
+      (cond
+        (error? c_evaluado) c_evaluado
+        (nil? c_evaluado) (evaluar el amb_global amb_local)
+        :else (evaluar el amb_global amb_local)
+      )
+    )
+  )
+)
+
+(defn ejecutar_if 
+  ([form amb_global amb_local]
+    (case (count form)
+      2 (ejecutar_if_aux amb_global amb_local (nth form 1) nil nil)
+      3 (ejecutar_if_aux amb_global amb_local (nth form 1) (nth form 2) nil)
+      (ejecutar_if_aux amb_global amb_local (nth form 1) (nth form 2) (last 3))
+    )
+  )
+)
 
 ; user=> (evaluar-if '(if t) '(nil nil t t v 1 w 3 x 6) '(x 5 y 11 z "hola"))
 ; (nil (nil nil t t v 1 w 3 x 6))
@@ -999,9 +1054,16 @@
 ; (8 (gt gt nil nil t t v 1 w 3 x 6))
 ; user=> (evaluar-if '(if (gt 0 2) a (setq m 8)) '(gt gt nil nil t t v 1 w 3 x 6) '(x 5 y 11 z "hola"))
 ; (8 (gt gt nil nil t t v 1 w 3 x 6 m 8))
-;(defn evaluar-if
-;  "Evalua una forma 'if'. Devuelve una lista con el resultado y un ambiente eventualmente modificado."
-;)
+(defn evaluar-if
+  "Evalua una forma 'if'. Devuelve una lista con el resultado y un ambiente eventualmente modificado."
+  [maybe_if_form amb_global amb_local]
+  (let [if_form (chequear-forma-if maybe_if_form)]
+    (error? if_form) if_form
+    ((comp not amb?) amb_global) (list '*error* 'list 'expected amb_global)
+    ((comp not amb?) amb_local) (list '*error* 'list 'expected amb_local)
+    :else (ejecutar_if if_form amb_global amb_local)
+  )
+)
 
 
 ; user=> (evaluar-or '(or) '(nil nil t t w 5 x 4) '(x 1 y nil z 3))

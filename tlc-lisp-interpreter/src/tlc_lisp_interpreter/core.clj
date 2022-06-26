@@ -109,8 +109,15 @@
         (not (seq? expre))             (evaluar-escalar expre amb-global amb-local)
 
         (igual? (first expre) 'cond)   (evaluar-cond expre amb-global amb-local)
-        (igual? (first expre) 'de)     (evaluar-de expre amb-global)
+        (igual? (first expre) 'de)     (evaluar-eval expre amb-global)
+        (igual? (first expre) 'eval)     (evaluar-eval expre amb-global amb-local)
+        (igual? (first expre) 'exit)     (evaluar-exit expre amb-global amb-local)
         (igual? (first expre) 'if)     (evaluar-if expre amb-global amb-local)
+        (igual? (first expre) 'lambda)     (evaluar-lambda expre amb-global amb-local)
+        (igual? (first expre) 'load)     (evaluar-load expre amb-global amb-local)
+        ;(igual? (first expre) 'or)     (evaluar-or expre amb-global amb-local)
+        (igual? (first expre) 'quote)     (evaluar-quote expre amb-global amb-local)
+        ;(igual? (first expre) 'setq)     (evaluar-setq expre amb-global amb-local)
          ;
          ;
          ;
@@ -1007,7 +1014,7 @@
     (let [c_evaluado (first (evaluar c amb_global amb_local))]
       ;(println c_evaluado)
       (cond
-        (error? c_evaluado) c_evaluado
+        (error? c_evaluado) (list c_evaluado amb_global)
         (nil? c_evaluado) (evaluar el amb_global amb_local)
         :else (evaluar th amb_global amb_local)
       )

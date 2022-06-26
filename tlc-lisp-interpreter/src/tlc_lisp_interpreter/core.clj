@@ -411,11 +411,11 @@
 
 (defn first-match [l func] (first (filter func l)))
 
-(defn get-from-amb [amb k] (let [i (.indexOf (amb-keys amb) k)] (if (= -1 i) k (nth (amb-values amb) i))))
+(defn get-from-amb [amb k] (let [i (.indexOf (amb-keys amb) k)] (if (= -1 i) (list '*error* 'unbound-symbol k) (nth (amb-values amb) i))))
 
 (defn amb? [amb] (
   cond
-    ((comp not list?) amb) false
+    ((comp not seq?) amb) false
     (odd? (count amb)) false
     :else true
 ))
@@ -622,8 +622,8 @@
       (seq? ari) ari
       (nil? (nth subl 0)) (nth subl 1)
       (nil? (nth subl 1)) (nth subl 0)
-      ((comp not list?) (nth subl 0)) (list '*error* 'list 'expected (nth subl 0))
-      ((comp not list?) (nth subl 1)) (list '*error* 'list 'expected (nth subl 1))
+      ((comp not seq?) (nth subl 0)) (list '*error* 'list 'expected (nth subl 0))
+      ((comp not seq?) (nth subl 1)) (list '*error* 'list 'expected (nth subl 1))
       :else (if_empty_nil (concat (nth subl 0) (nth subl 1)))
     )
   )
@@ -638,9 +638,9 @@
   "Devuelve la fusion de los ambientes global y local."
   [env_args env_global env_local]
   (cond
-    ((comp not list?) env_args) (list '*error* 'list 'expected env_args)
-    ((comp not list?) env_global) (list '*error* 'list 'expected env_global)
-    ((comp not list?) env_local) (list '*error* 'list 'expected env_local)
+    ((comp not seq?) env_args) (list '*error* 'list 'expected env_args)
+    ((comp not seq?) env_global) (list '*error* 'list 'expected env_global)
+    ((comp not seq?) env_local) (list '*error* 'list 'expected env_local)
     ((comp not empty?) env_args) (list '*error* 'too-many-args)
     :else (concat env_global env_local)
   )
@@ -708,7 +708,7 @@
   "Devuelve la lectura de un elemento de TLC-LISP desde la terminal/consola."
   [args]
   (cond
-    ((comp not list?) args) (list '*error* 'not-implemented)
+    ((comp not seq?) args) (list '*error* 'not-implemented)
     ((comp not empty?) args) (list '*error* 'not-implemented)
     :else (let [a (read-line)]
       (if (= a "()") nil a)
@@ -728,7 +728,7 @@
   "Imprime un salto de línea y devuelve nil."
   [args]
   (cond
-    ((comp not list?) args) (list '*error* 'not-implemented)
+    ((comp not seq?) args) (list '*error* 'not-implemented)
     ((comp not empty?) args) (list '*error* 'not-implemented)
     :else (do (println) nil)
   )
@@ -754,7 +754,7 @@
   "Suma los elementos de una lista. Minimo 2 elementos."
   [addends]
   (cond
-    ((comp not list?) addends) (list '*error* 'list 'expected)
+    ((comp not seq?) addends) (list '*error* 'list 'expected)
     (> 2 (count addends)) (list '*error* 'too-few-args)
     (not-every? number? addends) (list '*error* 'number-expected (first-match addends (comp not number?)))
     :else (reduce + addends)
@@ -782,7 +782,7 @@
   "Resta los elementos de un lista. Minimo 1 elemento."
   [subtrahend]
   (cond
-    ((comp not list?) subtrahend) (list '*error* 'list 'expected)
+    ((comp not seq?) subtrahend) (list '*error* 'list 'expected)
     (empty? subtrahend) (list '*error* 'too-few-args)
     (not-every? number? subtrahend) (list '*error* 'number-expected (first-match subtrahend (comp not number?)))
     (= 1 (count subtrahend)) (- (nth subtrahend 0))
@@ -811,7 +811,7 @@
     "Devuelve t si el primer numero es menor que el segundo; si no, nil."
     [args]
     (cond
-      ((comp not list?) args) (list '*error* 'list 'expected args)
+      ((comp not seq?) args) (list '*error* 'list 'expected args)
       (> 2 (count args)) (list '*error* 'too-few-args)
       (< 2 (count args)) (list '*error* 'too-many-args)
       (not-every? number? args) (list '*error* 'number-expected (first-match args (comp not number?)))
@@ -840,7 +840,7 @@
     "Devuelve t si el primer numero es mayor que el segundo; si no, nil."
     [args]
     (cond
-      ((comp not list?) args) (list '*error* 'list 'expected args)
+      ((comp not seq?) args) (list '*error* 'list 'expected args)
       (> 2 (count args)) (list '*error* 'too-few-args)
       (< 2 (count args)) (list '*error* 'too-many-args)
       (not-every? number? args) (list '*error* 'number-expected (first-match args (comp not number?)))
@@ -869,7 +869,7 @@
     "Devuelve t si el primer numero es mayor o igual que el segundo; si no, nil."
     [args]
     (cond
-      ((comp not list?) args) (list '*error* 'list 'expected args)
+      ((comp not seq?) args) (list '*error* 'list 'expected args)
       (> 2 (count args)) (list '*error* 'too-few-args)
       (< 2 (count args)) (list '*error* 'too-many-args)
       (not-every? number? args) (list '*error* 'number-expected (first-match args (comp not number?)))
@@ -894,10 +894,10 @@
   "Devuelve una lista con sus elementos en orden inverso."
   [args]
   (cond
-    ((comp not list?) args) (list '*error* 'list 'expected args)
+    ((comp not seq?) args) (list '*error* 'list 'expected args)
     (> 1 (count args)) (list '*error* 'too-few-args)
     (< 1 (count args)) (list '*error* 'too-many-args)
-    ((comp not list?) (nth args 0)) (list '*error* 'list 'expected (nth args 0))
+    ((comp not seq?) (nth args 0)) (list '*error* 'list 'expected (nth args 0))
     :else (reverse (nth args 0))
   )
 )						
@@ -921,23 +921,27 @@
   [k env_global env_local]
   (let [sym (lowercase-symbol k)] 
     (cond
-      ((comp not list?) env_global) (list '*error* 'list 'expected env_global)
-      ((comp not list?) env_local) (list '*error* 'list 'expected env_local)
+      ((comp not amb?) env_global) (list '*error* 'list 'expected env_global)
+      ((comp not amb?) env_local) (list '*error* 'list 'expected env_local)
       ((comp not symbol?) sym) (list k env_global)
-      (not= sym (get-from-amb env_local sym)) (list (get-from-amb env_local sym) env_global)
-      (not= sym (get-from-amb env_global sym)) (list (get-from-amb env_global sym) env_global)
-      :else (list (list '*error* 'unbound-symbol k) env_global)
+      :else (let [global_value (get-from-amb env_global sym) local_value (get-from-amb env_local sym)]
+          (cond
+            ((comp not error?) local_value) (list local_value env_global)
+            ((comp not error?) global_value) (list global_value env_global)
+            :else (list global_value env_global)
+          )
+      )
     )
   )
 )
 
 (defn chequear-forma-de [form]
   (cond
-    ((comp not list?) form) (list '*error* 'list 'expected form)
+    ((comp not seq?) form) (list '*error* 'list 'expected form)
     (> 3 (count form)) (list '*error* 'list 'expected 'nil)
     (not= 'de (first form)) (list '*error* 'de 'expected (first form))
     (nil? (nth form 1)) (list '*error* 'cannot-set (nth form 1))
-    ((comp not list?) (nth form 2)) (list '*error* 'list 'expected (nth form 2))
+    ((comp not seq?) (nth form 2)) (list '*error* 'list 'expected (nth form 2))
     ((comp not symbol?) (nth form 1)) (list '*error* 'symbol 'expected (nth form 1))
     :else form
   )
@@ -945,7 +949,7 @@
 
 (defn ligar [form amb]
   (let [sym (nth form 1) body ((comp pop pop) form)]
-    (list sym (concat amb (list sym (concat '(lambda) body))))
+    (list sym (actualizar-amb amb sym (concat '(lambda) body)))
   )
 )
 
@@ -992,7 +996,7 @@
     (cond
       ((comp not list?) form) (list '*error* 'list 'expected form)
       (> 2 (count form)) (list '*error* 'too-few-args)
-      (= 'if (nth form 0)) (list '*error* 'expected-if (nth form 0))
+      (not= 'if (nth form 0)) (list '*error* 'expected-if (nth form 0))
       :else form
     )
   )
@@ -1000,11 +1004,12 @@
 
 (defn ejecutar_if_aux 
   ([amb_global amb_local c th el]
-    (let [c_evaluado (evaluar c)]
+    (let [c_evaluado (first (evaluar c amb_global amb_local))]
+      ;(println c_evaluado)
       (cond
         (error? c_evaluado) c_evaluado
         (nil? c_evaluado) (evaluar el amb_global amb_local)
-        :else (evaluar el amb_global amb_local)
+        :else (evaluar th amb_global amb_local)
       )
     )
   )
@@ -1015,7 +1020,7 @@
     (case (count form)
       2 (ejecutar_if_aux amb_global amb_local (nth form 1) nil nil)
       3 (ejecutar_if_aux amb_global amb_local (nth form 1) (nth form 2) nil)
-      (ejecutar_if_aux amb_global amb_local (nth form 1) (nth form 2) (last 3))
+      (ejecutar_if_aux amb_global amb_local (nth form 1) (nth form 2) (last form))
     )
   )
 )
@@ -1058,10 +1063,12 @@
   "Evalua una forma 'if'. Devuelve una lista con el resultado y un ambiente eventualmente modificado."
   [maybe_if_form amb_global amb_local]
   (let [if_form (chequear-forma-if maybe_if_form)]
-    (error? if_form) if_form
-    ((comp not amb?) amb_global) (list '*error* 'list 'expected amb_global)
-    ((comp not amb?) amb_local) (list '*error* 'list 'expected amb_local)
-    :else (ejecutar_if if_form amb_global amb_local)
+    (cond
+      (error? if_form) if_form
+      ((comp not amb?) amb_global) (list '*error* 'list 'expected amb_global)
+      ((comp not amb?) amb_local) (list '*error* 'list 'expected amb_local)
+      :else (ejecutar_if if_form amb_global amb_local)
+    )
   )
 )
 

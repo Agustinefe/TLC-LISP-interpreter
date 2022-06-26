@@ -717,7 +717,7 @@
   (cond
     ((comp not seq?) args) (list '*error* 'not-implemented)
     ((comp not empty?) args) (list '*error* 'not-implemented)
-    :else (let [a (read-line)]
+    :else (let [a (read)]
       (if (= a "()") nil a)
     )
   )
@@ -1071,7 +1071,7 @@
   [maybe_if_form amb_global amb_local]
   (let [if_form (chequear-forma-if maybe_if_form)]
     (cond
-      (error? if_form) if_form
+      (error? if_form) (list if_form amb_global)
       ((comp not amb?) amb_global) (list '*error* 'list 'expected amb_global)
       ((comp not amb?) amb_local) (list '*error* 'list 'expected amb_local)
       :else (ejecutar_if if_form amb_global amb_local)
@@ -1079,6 +1079,16 @@
   )
 )
 
+(defn chequear-forma-or
+  ([form]
+    (cond
+      ((comp not list?) form) (list '*error* 'list 'expected form)
+      ((comp not empty?) form) (list '*error* 'too-few-args)
+      (not= 'or (nth form 0)) (list '*error* 'expected-or (nth form 0))
+      :else form
+    )
+  )
+)
 
 ; user=> (evaluar-or '(or) '(nil nil t t w 5 x 4) '(x 1 y nil z 3))
 ; (nil (nil nil t t w 5 x 4))
@@ -1106,9 +1116,18 @@
 ; (t (nil nil t t w 5 x 4))
 ; user=> (evaluar-or '(or nil nil nil nil) '(nil nil t t w 5 x 4) '(x 1 y nil z 3))
 ; (nil (nil nil t t w 5 x 4))
-;(defn evaluar-or
-;  "Evalua una forma 'or'. Devuelve una lista con el resultado y un ambiente."
-;)
+(defn evaluar-or
+  "Evalua una forma 'or'. Devuelve una lista con el resultado y un ambiente."
+    [maybe_or_form amb_global amb_local]
+    (let [or_form (chequear-forma-or maybe_or_form)]
+    (cond
+      (error? or_form) (list or_form amb_global)
+      ((comp not amb?) amb_global) (list '*error* 'list 'expected amb_global)
+      ((comp not amb?) amb_local) (list '*error* 'list 'expected amb_local)
+      :else (ejecutar_or or_form amb_global amb_local)
+    )
+  )
+)
 
 
 ; user=> (evaluar-setq '(setq) '(nil nil t t + add w 5 x 4) '(x 1 y nil z 3))

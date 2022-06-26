@@ -1001,7 +1001,7 @@
 (defn chequear-forma-if 
   ([form]
     (cond
-      ((comp not list?) form) (list '*error* 'list 'expected form)
+      ((comp not seq?) form) (list '*error* 'list 'expected form)
       (> 2 (count form)) (list '*error* 'too-few-args)
       (not= 'if (nth form 0)) (list '*error* 'expected-if (nth form 0))
       :else form
@@ -1082,11 +1082,19 @@
 (defn chequear-forma-or
   ([form]
     (cond
-      ((comp not list?) form) (list '*error* 'list 'expected form)
-      ((comp not empty?) form) (list '*error* 'too-few-args)
+      ((comp not seq?) form) (list '*error* 'list 'expected form)
+      ((comp empty?) form) (list '*error* 'too-few-args)
       (not= 'or (nth form 0)) (list '*error* 'expected-or (nth form 0))
       :else form
     )
+  )
+)
+
+(defn my_or [arg1 arg2] (or arg1 arg2))
+
+(defn ejecutar_or
+  ([form amb_global amb_local]
+    (list (reduce my_or (map first (map evaluar (pop form) (repeat amb_global) (repeat amb_local)))) amb_global)
   )
 )
 

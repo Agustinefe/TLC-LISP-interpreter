@@ -324,7 +324,6 @@
     (is (= '(8 (nil nil t t v 1 w 3 x 6)) (evaluar-if '(if nil a 8) '(nil nil t t v 1 w 3 x 6) '(x 5 y 11 z "hola"))))
     (is (= '(8 (gt gt nil nil t t v 1 w 3 x 6)) (evaluar-if '(if (gt 0 2) a 8) '(gt gt nil nil t t v 1 w 3 x 6) '(x 5 y 11 z "hola"))))
     (is (= '(8 (gt gt nil nil t t v 1 w 3 x 6 m 8)) (evaluar-if '(if (gt 0 2) a (setq m 8)) '(gt gt nil nil t t v 1 w 3 x 6) '(x 5 y 11 z "hola"))))
-
   )
 
   (testing "Error"
@@ -347,6 +346,13 @@
     (is (= '(6 (nil nil t t w 5 x 4)) (evaluar-or '(or nil 6 r nil) '(nil nil t t w 5 x 4) '(x 1 y nil z 3))))
     (is (= '(t (nil nil t t w 5 x 4)) (evaluar-or '(or nil t r nil) '(nil nil t t w 5 x 4) '(x 1 y nil z 3))))
     (is (= '(nil (nil nil t t w 5 x 4)) (evaluar-or '(or nil nil nil nil) '(nil nil t t w 5 x 4) '(x 1 y nil z 3))))
+    (is (= '(t (nil nil t t w 5 x 4)) (evaluar-or '(or nil t) '(nil nil t t w 5 x 4) '(x 1 y nil z 3))))
+    (is (= '(t (nil nil t t w 5 x 4)) (evaluar-or '(or t nil) '(nil nil t t w 5 x 4) '(x 1 y nil z 3))))
+    (is (= '(t (nil nil t t w 5 x 4)) (evaluar-or '(or t t) '(nil nil t t w 5 x 4) '(x 1 y nil z 3))))
+    (is (= '(t (nil nil t t w 5 x 4)) (evaluar-or '(or t t) '(nil nil t t w 5 x 4) '(x 1 y nil z 3))))
+    (is (= '(t (nil nil t t w 5 x 4)) (evaluar-or '(or t t t nil) '(nil nil t t w 5 x 4) '(x 1 y nil z 3))))
+    (is (= '(nil (nil nil t t w 5 x 4)) (evaluar-or '(or nil nil) '(nil nil t t w 5 x 4) '(x 1 y nil z 3))))
+    
   )
 
   (testing "Error"

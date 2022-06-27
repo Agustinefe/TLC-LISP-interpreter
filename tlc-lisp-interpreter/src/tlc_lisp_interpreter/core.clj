@@ -230,6 +230,9 @@
 (defn aplicar
   "Aplica a la lista de argumentos 'lae' la función 'fnc' en los ambientes dados."
   ([fnc lae amb-global amb-local]
+  ;(println "se va a ejecutar...")
+  ;(println fnc)
+  ;(println lae)
    (aplicar (revisar-fnc fnc) (revisar-lae lae) fnc lae amb-global amb-local))
   ([resu1 resu2 fnc lae amb-global amb-local]
    (cond
@@ -1004,7 +1007,7 @@
 (defn evaluar-de
   "Evalua una forma 'de'. Devuelve una lista con el resultado y un ambiente actualizado con la definicion."
   [maybe_form amb]
-  (let [form (chequear-forma-de maybe_form)]
+  (let [form (chequear-forma-de (lowercase-all-symbols maybe_form))]
     (cond
       (error? form) (list form amb)
       :else (ligar form amb)
@@ -1101,9 +1104,21 @@
   )
 )
 
+(defn map_bool [b]
+  (not (igual? nil b))
+)
+
 (defn my_or 
   ([arg1 arg2] 
-    (let [x (first arg1) y (first arg2)]
+    (let [x (map_bool (first arg1)) y (map_bool (first arg2))]
+      ;(spy "Or x" x)
+      ;(spy "Or y" y)
+      ;(spy "Nil x?" (nil? x))
+      ;(spy "Nil y?" (nil? y))
+      ;(spy "String x?" (string? x))
+      ;(spy "String y?" (string? y))
+      ;(spy "Da x?" (= x (or x y)))
+      ;(spy "Da y?" (= y (or x y)))
       (cond 
         (= x (or x y)) arg1
         (= y (or x y)) arg2
@@ -1116,6 +1131,7 @@
 (defn ejecutar_or
   ([form amb_global amb_local]
     (let [args (pop form)]
+      ;(spy "Se ejecuta or con: " args)
       (if (empty? args) 
         (list nil amb_global) 
         (reduce my_or (map evaluar args (repeat amb_global) (repeat amb_local)))
@@ -1154,6 +1170,7 @@
   "Evalua una forma 'or'. Devuelve una lista con el resultado y un ambiente."
     [maybe_or_form amb_global amb_local]
     (let [or_form (chequear-forma-or maybe_or_form)]
+    ;(spy "Or args" or_form)
     (cond
       (error? or_form) (list or_form amb_global)
       :else (ejecutar_or or_form amb_global amb_local)

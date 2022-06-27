@@ -91,7 +91,6 @@
    (print ">>> ") (flush)
    (try
      (let [res (evaluar (read) amb nil)]  ; READ, EVAL
-       ;(println res)
        (if (nil? (second res))
            true
            (do (imprimir (first res))     ; PRINT
@@ -113,7 +112,7 @@
         (not (seq? expre))             (evaluar-escalar expre amb-global amb-local)
 
         (igual? (first expre) 'cond)   (evaluar-cond expre amb-global amb-local)
-        (igual? (first expre) 'de)     (evaluar-eval expre amb-global)
+        (igual? (first expre) 'de)     (evaluar-de expre amb-global)
         (igual? (first expre) 'eval)     (evaluar-eval expre amb-global amb-local)
         (igual? (first expre) 'exit)     (evaluar-exit expre amb-global amb-local)
         (igual? (first expre) 'if)     (evaluar-if expre amb-global amb-local)
@@ -402,10 +401,18 @@
 
 (defn lowercase-symbol [sym] (if (symbol? sym) (symbol (.toLowerCase (str sym))) (list '*error* 'symbol-expected sym)))
 
+(defn lowercase-all-symbols [v]
+  (cond
+    (seq? v) (map lowercase-all-symbols v)
+    (symbol? v) (lowercase-symbol v)
+    :else v
+  )
+)
+
 (defn mutar
   ([elem]
     (cond 
-      (list? elem) (if (empty? elem) nil (map mutar elem))
+      (seq? elem) (if (empty? elem) nil (map mutar elem))
       (symbol? elem) (if (= 'NIL (uppercase-symbol elem)) nil (uppercase-symbol elem))
       :else elem
     )
@@ -418,7 +425,7 @@
 
 (defn if_empty_nil [l] (if (empty? l) nil l))
 
-(defn if_not_list_error [l] ((comp not list?) l) (list '*error* 'list 'expected l))
+(defn if_not_list_error [l] ((comp not seq?) l) (list '*error* 'list 'expected l))
 
 (defn first-match [l func] (first (filter func l)))
 
@@ -446,7 +453,7 @@
    Si no, devuelve una lista con un mensaje de error (una lista con *error* como primer elemento)."
     ([seq ari]
         (cond 
-            ((comp not list?) seq) (list '*error* 'list 'expected seq)
+            ((comp not seq?) seq) (list '*error* 'list 'expected seq)
             ((comp not number?) ari) (list '*error* 'number 'expected ari)
             (< (count seq) ari) (list '*error* 'too-few-args)
             (> (count seq) ari) (list '*error* 'too-many-args)
@@ -526,7 +533,7 @@
   "Devuelve true o false, segun sea o no el arg. un mensaje de error (una lista con *error* como primer elemento)."
   ([err]
     (cond
-      ((comp not list?) err) false ; no es lista
+      ((comp not seq?) err) false ; no es lista
       (empty? err) false
       (not (symbol? (nth err 0))) false ; el primer elemento no es symbol
       :else (= '*ERROR* (uppercase-symbol (nth err 0)))
@@ -590,8 +597,10 @@
 (defn actualizar-amb
   "Devuelve un ambiente actualizado con una clave (nombre de la variable o funcion) y su valor. 
   Si el valor es un error, el ambiente no se modifica. De lo contrario, se le carga o reemplaza el valor."
-  [amb k v]
+  [amb k_bis v]
+  (let [k (lowercase-symbol k_bis)]
     (reverse (into (list) (actualizar-amb-aux (into [] amb) k (.indexOf amb k) v)))
+  )
 )
 
 ; user=> (buscar 'c '(a 1 b 2 c 3 d 4 e 5))
@@ -602,11 +611,13 @@
   "Busca una clave en un ambiente (una lista con claves en las posiciones impares [1, 3, 5...] y valores en las pares [2, 4, 6...]
    y devuelve el valor asociado. Devuelve un mensaje de error si no la encuentra."
   [k amb]
-    ()
-    (if (= -1 (.indexOf (amb-keys amb) k))
-      (list '*error* 'unbound-symbol k)
-      (nth (amb-values amb) (.indexOf (amb-keys amb) k))
-    )  
+    (let [k_lowcase (lowercase-symbol k) k_upcase (uppercase-symbol k)]
+      (cond 
+        (not= -1 (.indexOf (amb-keys amb) k_lowcase)) (nth (amb-values amb) (.indexOf (amb-keys amb) k_lowcase))
+        (not= -1 (.indexOf (amb-keys amb) k_upcase)) (nth (amb-values amb) (.indexOf (amb-keys amb) k_upcase))
+        :else (list '*error* 'unbound-symbol k)
+      )  
+    )
 )
 
 ; user=> (fnc-append '( (1 2) ))
@@ -740,8 +751,7 @@
   "Imprime un salto de línea y devuelve nil."
   [args]
   (cond
-    ((comp not seq?) args) (list '*error* 'not-implemented)
-    ((comp not empty?) args) (list '*error* 'not-implemented)
+    ((comp not nil?) args) (list '*error* 'not-implemented)
     :else (do (println) nil)
   )
 ) 
@@ -931,16 +941,14 @@
 (defn evaluar-escalar
   "Evalua una expresion escalar consultando, si corresponde, los ambientes local y global. Devuelve una lista con el resultado y un ambiente."
   [k env_global env_local]
-  (let [sym (lowercase-symbol k)] 
-    (cond
-      ((comp not symbol?) sym) (list k env_global)
-      :else (let [global_value (get-from-amb env_global sym) local_value (get-from-amb env_local sym)]
-          (cond
-            ((comp not error?) local_value) (list local_value env_global)
-            ((comp not error?) global_value) (list global_value env_global)
-            :else (list global_value env_global)
-          )
-      )
+  (cond
+    ((comp not symbol?) k) (list k env_global)
+    :else (let [global_value (buscar k env_global) local_value (buscar k env_local)]
+        (cond
+          ((comp not error?) local_value) (list local_value env_global)
+          ((comp not error?) global_value) (list global_value env_global)
+          :else (list global_value env_global)
+        )
     )
   )
 )

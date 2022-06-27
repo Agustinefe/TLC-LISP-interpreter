@@ -115,7 +115,7 @@
         (igual? (first expre) 'if)     (evaluar-if expre amb-global amb-local)
         (igual? (first expre) 'lambda)     (evaluar-lambda expre amb-global amb-local)
         (igual? (first expre) 'load)     (evaluar-load expre amb-global amb-local)
-        ;(igual? (first expre) 'or)     (evaluar-or expre amb-global amb-local)
+        (igual? (first expre) 'or)     (evaluar-or expre amb-global amb-local)
         (igual? (first expre) 'quote)     (evaluar-quote expre amb-global amb-local)
         ;(igual? (first expre) 'setq)     (evaluar-setq expre amb-global amb-local)
          ;
@@ -426,6 +426,8 @@
     (odd? (count amb)) false
     :else true
 ))
+
+(defn trans [m] (apply map list m))
 
 ; FUNCIONES QUE DEBEN SER IMPLEMENTADAS PARA COMPLETAR EL INTERPRETE DE TLC-LISP (ADEMAS DE COMPLETAR 'EVALUAR' Y 'APLICAR-FUNCION-PRIMITIVA'):
 
@@ -1090,11 +1092,26 @@
   )
 )
 
-(defn my_or [arg1 arg2] (or arg1 arg2))
+(defn my_or 
+  ([arg1 arg2] 
+    (let [x (first arg1) y (first arg2)]
+      (cond 
+        (= x (or x y)) arg1
+        (= y (or x y)) arg2
+        :else (list '*error* 'this-should-never-happen (or x y))
+      )
+    )
+  )
+)
 
 (defn ejecutar_or
   ([form amb_global amb_local]
-    (list (reduce my_or (map first (map evaluar (pop form) (repeat amb_global) (repeat amb_local)))) amb_global)
+    (let [args (pop form)]
+      (if (empty? args) 
+        (list nil amb_global) 
+        (reduce my_or (map evaluar args (repeat amb_global) (repeat amb_local)))
+      ) 
+    )
   )
 )
 
@@ -1137,6 +1154,60 @@
   )
 )
 
+(defn chequear-argumentos-nuevos
+  ([form amb_global amb_local]
+    (let [akeys ((comp amb-keys pop) form)]
+      (cond
+        (not-every? symbol? akeys) (list '*error* 'cannot-set (first-match akeys (comp not symbol?)))
+        :else form
+      )
+    )
+  )
+)
+
+(defn chequear-forma-setq
+  ([form amb_global amb_local]
+    (cond
+      ((comp not seq?) form) (list (list '*error* 'list 'expected form) amb_global)
+      ((comp empty?) form) (list (list '*error* 'too-few-args) amb_global)
+      (not= 'setq (nth form 0)) (list (list '*error* 'expected-setq (nth form 0)) amb_global)
+      :else form
+    )
+  )
+)
+
+(defn set-key-value 
+  ([akeys avalues amb_global amb_local] ;['(a b c) '(1 2 3) '(0 (x 9 y 8 z 7)) '(f 4 g 5 h 6)]
+    (cond
+      (empty? akeys) amb_global ; '(0 (x 9 y 8 z 7))
+      (empty? avalues) (list (list '*error* 'list 'expected nil) (second amb_global)) ; '((*error* blabla) (x 9 y 8 z 7))
+      :else (let [k (first akeys) v_amb (evaluar (first avalues) (second amb_global) amb_local)] ; ['a '(1ev (x 9 y 8 z 7))]
+              (cond
+                (error? (first v_amb)) v_amb ;'(1ev (x 9 y 8 z 7))
+                (nil? k) (list (list '*error* 'cannot-set k) (second v_amb)) ;'((*error* cannot-set a) (x 9 y 8 z 7))
+                ((comp not symbol?) k) (list (list '*error* 'symbol 'expected k) (second v_amb))
+                :else (set-key-value
+                        (rest akeys) ; '(b c)
+                        (rest avalues) ; '(2 3)
+                        (list (first v_amb) (actualizar-amb (second v_amb) k (first v_amb))) ;'(1ev (x 9 y 8 z 7 a 1ev))
+                        amb_local ;'(f 4 g 5 h 6)
+                      )
+              )
+            )
+    )
+  )
+)
+
+(defn ejecutar_setq 
+  ([form amb_global amb_local]
+    (let [args (pop form)]
+      (cond 
+        (empty? args) (list (list '*error* 'list 'expected nil) amb_global)
+        :else (set-key-value (amb-keys args) (amb-values args) (list nil amb_global) amb_local)
+      )
+    )
+  )
+)
 
 ; user=> (evaluar-setq '(setq) '(nil nil t t + add w 5 x 4) '(x 1 y nil z 3))
 ; ((*error* list expected nil) (nil nil t t + add w 5 x 4))
@@ -1164,9 +1235,18 @@
 ; ((*error* list expected nil) (nil nil t t + add w 5 x 7))
 ; user=> (evaluar-setq '(setq x 7 y 8 z 9) '(nil nil t t + add w 5 x 4) '(y nil z 3))
 ; (9 (nil nil t t + add w 5 x 7 y 8 z 9))
-;(defn evaluar-setq
-;  "Evalua una forma 'setq'. Devuelve una lista con el resultado y un ambiente actualizado."
-;)
+(defn evaluar-setq
+  "Evalua una forma 'setq'. Devuelve una lista con el resultado y un ambiente actualizado."
+    [maybe_setq_form amb_global amb_local]
+    (let [setq_form (chequear-forma-setq maybe_setq_form amb_global amb_local)]
+    (cond
+      (error? setq_form) (list setq_form amb_global)
+      ((comp not amb?) amb_global) (list '*error* 'list 'expected amb_global)
+      ((comp not amb?) amb_local) (list '*error* 'list 'expected amb_local)
+      :else (ejecutar_setq setq_form amb_global amb_local)
+    )
+  )
+)
 
 
 ; Al terminar de cargar el archivo en el REPL de Clojure (con load-file), se debe devolver true.

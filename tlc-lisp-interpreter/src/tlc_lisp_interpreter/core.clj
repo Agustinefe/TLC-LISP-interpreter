@@ -117,7 +117,7 @@
         (igual? (first expre) 'load)     (evaluar-load expre amb-global amb-local)
         (igual? (first expre) 'or)     (evaluar-or expre amb-global amb-local)
         (igual? (first expre) 'quote)     (evaluar-quote expre amb-global amb-local)
-        ;(igual? (first expre) 'setq)     (evaluar-setq expre amb-global amb-local)
+        (igual? (first expre) 'setq)     (evaluar-setq expre amb-global amb-local)
          ;
          ;
          ;
@@ -1257,4 +1257,5 @@
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
-  (println "Hello, World!"))
+  (println "Hello, World!")
+)

@@ -1,3 +1,6 @@
+(ns tlc-lisp-interpreter.core
+  (:gen-class))
+
 (require '[clojure.string :refer [blank? ends-with? lower-case]] '[clojure.java.io :refer [reader]])
 
 (defn spy
@@ -88,6 +91,7 @@
    (print ">>> ") (flush)
    (try
      (let [res (evaluar (read) amb nil)]  ; READ, EVAL
+       ;(println res)
        (if (nil? (second res))
            true
            (do (imprimir (first res))     ; PRINT
@@ -717,10 +721,9 @@
   "Devuelve la lectura de un elemento de TLC-LISP desde la terminal/consola."
   [args]
   (cond
-    ((comp not seq?) args) (list '*error* 'not-implemented)
-    ((comp not empty?) args) (list '*error* 'not-implemented)
+    ((comp not nil?) args) (list '*error* 'not-implemented)
     :else (let [a (read)]
-      (if (= a "()") nil a)
+      (if (= a '()) nil a)
     )
   )
 )
@@ -930,8 +933,6 @@
   [k env_global env_local]
   (let [sym (lowercase-symbol k)] 
     (cond
-      ((comp not amb?) env_global) (list '*error* 'list 'expected env_global)
-      ((comp not amb?) env_local) (list '*error* 'list 'expected env_local)
       ((comp not symbol?) sym) (list k env_global)
       :else (let [global_value (get-from-amb env_global sym) local_value (get-from-amb env_local sym)]
           (cond
@@ -993,7 +994,6 @@
   [maybe_form amb]
   (let [form (chequear-forma-de maybe_form)]
     (cond
-      ((comp not amb?) amb) (list '*error* 'list 'expected amb)
       (error? form) (list form amb)
       :else (ligar form amb)
     )
@@ -1014,7 +1014,6 @@
 (defn ejecutar_if_aux 
   ([amb_global amb_local c th el]
     (let [c_evaluado (first (evaluar c amb_global amb_local))]
-      ;(println c_evaluado)
       (cond
         (error? c_evaluado) (list c_evaluado amb_global)
         (nil? c_evaluado) (evaluar el amb_global amb_local)
@@ -1074,8 +1073,6 @@
   (let [if_form (chequear-forma-if maybe_if_form)]
     (cond
       (error? if_form) (list if_form amb_global)
-      ((comp not amb?) amb_global) (list '*error* 'list 'expected amb_global)
-      ((comp not amb?) amb_local) (list '*error* 'list 'expected amb_local)
       :else (ejecutar_if if_form amb_global amb_local)
     )
   )
@@ -1147,8 +1144,6 @@
     (let [or_form (chequear-forma-or maybe_or_form)]
     (cond
       (error? or_form) (list or_form amb_global)
-      ((comp not amb?) amb_global) (list '*error* 'list 'expected amb_global)
-      ((comp not amb?) amb_local) (list '*error* 'list 'expected amb_local)
       :else (ejecutar_or or_form amb_global amb_local)
     )
   )
@@ -1241,8 +1236,6 @@
     (let [setq_form (chequear-forma-setq maybe_setq_form amb_global amb_local)]
     (cond
       (error? setq_form) (list setq_form amb_global)
-      ((comp not amb?) amb_global) (list '*error* 'list 'expected amb_global)
-      ((comp not amb?) amb_local) (list '*error* 'list 'expected amb_local)
       :else (ejecutar_setq setq_form amb_global amb_local)
     )
   )
@@ -1251,11 +1244,9 @@
 
 ; Al terminar de cargar el archivo en el REPL de Clojure (con load-file), se debe devolver true.
 
-(ns tlc-lisp-interpreter.core
-  (:gen-class))
-
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
   (println "Hello, World!")
+  (repl)
 )

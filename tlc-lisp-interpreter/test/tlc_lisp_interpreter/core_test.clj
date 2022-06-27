@@ -159,7 +159,22 @@
   )
 )
 
-;(deftest fnc-read-test)
+(deftest fnc-read-test
+  (testing "Reading"
+    (is (= 1 (with-in-str "1" (fnc-read nil))))
+    (is (= 'a (with-in-str "a" (fnc-read nil))))
+    (is (= "hola" (with-in-str "\"hola\"" (fnc-read nil))))
+    (is (= '(hola mundo) (with-in-str "(hola mundo)" (fnc-read nil))))
+    (is (= '(hola mundo) (with-in-str "(hola\nmundo)" (fnc-read nil))))
+    (is (= nil (with-in-str "()" (fnc-read nil))))
+    (is (= nil (with-in-str "nil" (fnc-read nil))))
+  )
+
+  (testing "Error"
+    (is (= '(*error* not-implemented) (with-in-str "1" (fnc-read '(1)))))
+    (is (= '(*error* not-implemented) (with-in-str "1" (fnc-read '(1 2)))))
+  )
+)
 ;(deftest fnc-terpri-test)
 
 (deftest fnc-add-test

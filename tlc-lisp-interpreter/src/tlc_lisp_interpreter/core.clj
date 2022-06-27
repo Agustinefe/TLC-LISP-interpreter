@@ -401,9 +401,11 @@
 
 (defn lowercase-symbol [sym] (if (symbol? sym) (symbol (.toLowerCase (str sym))) (list '*error* 'symbol-expected sym)))
 
+(defn to-list [seq] (reverse (into () seq)))
+
 (defn lowercase-all-symbols [v]
   (cond
-    (seq? v) (map lowercase-all-symbols v)
+    (seq? v) (to-list (map lowercase-all-symbols v))
     (symbol? v) (lowercase-symbol v)
     :else v
   )
@@ -598,8 +600,10 @@
   "Devuelve un ambiente actualizado con una clave (nombre de la variable o funcion) y su valor. 
   Si el valor es un error, el ambiente no se modifica. De lo contrario, se le carga o reemplaza el valor."
   [amb k_bis v]
+  ;(println k_bis)
+  ;(println v)
   (let [k (lowercase-symbol k_bis)]
-    (reverse (into (list) (actualizar-amb-aux (into [] amb) k (.indexOf amb k) v)))
+    (reverse (into (list) (actualizar-amb-aux (into [] amb) k (.indexOf amb k) (lowercase-all-symbols v))))
   )
 )
 

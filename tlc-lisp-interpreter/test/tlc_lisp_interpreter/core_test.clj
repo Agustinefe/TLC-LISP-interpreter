@@ -175,7 +175,18 @@
     (is (= '(*error* not-implemented) (with-in-str "1" (fnc-read '(1 2)))))
   )
 )
-;(deftest fnc-terpri-test)
+
+(deftest fnc-terpri-test
+  (testing "Terpri"
+    (is (= "\n" (with-out-str (fnc-terpri nil))))
+    (is (nil? (fnc-terpri nil)))
+  )
+
+  (testing "Error"
+    (is (= '(*error* not-implemented) (fnc-terpri '(1))))
+    (is (= '(*error* not-implemented) (fnc-terpri '(1 2))))
+  )
+)
 
 (deftest fnc-add-test
   (testing "Add"

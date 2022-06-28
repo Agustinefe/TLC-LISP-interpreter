@@ -658,6 +658,9 @@
   )
 )
 
+(defn seq-or-nil? [elem]
+  (or (nil? elem) (seq? elem))
+)
 
 ; user=> (fnc-env () '(a 1 b 2) '(c 3 d 4))
 ; (a 1 b 2 c 3 d 4)
@@ -667,9 +670,9 @@
   "Devuelve la fusion de los ambientes global y local."
   [env_args env_global env_local]
   (cond
-    ((comp not seq?) env_args) (list '*error* 'list 'expected env_args)
-    ((comp not seq?) env_global) (list '*error* 'list 'expected env_global)
-    ((comp not seq?) env_local) (list '*error* 'list 'expected env_local)
+    ((comp not seq-or-nil?) env_args) (list '*error* 'list 'expected env_args)
+    ((comp not seq-or-nil?) env_global) (list '*error* 'list 'expected env_global)
+    ((comp not seq-or-nil?) env_local) (list '*error* 'list 'expected env_local)
     ((comp not empty?) env_args) (list '*error* 'too-many-args)
     :else (concat env_global env_local)
   )

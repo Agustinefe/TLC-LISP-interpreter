@@ -1186,20 +1186,20 @@
 )
 
 (defn set-key-value 
-  ([akeys avalues amb_global amb_local] ;['(a b c) '(1 2 3) '(0 (x 9 y 8 z 7)) '(f 4 g 5 h 6)]
+  ([akeys avalues amb_global amb_local]
     (cond
-      (empty? akeys) amb_global ; '(0 (x 9 y 8 z 7))
-      (empty? avalues) (list (list '*error* 'list 'expected nil) (second amb_global)) ; '((*error* blabla) (x 9 y 8 z 7))
-      :else (let [k (first akeys) v_amb (evaluar (first avalues) (second amb_global) amb_local)] ; ['a '(1ev (x 9 y 8 z 7))]
+      (empty? akeys) amb_global
+      (empty? avalues) (list (list '*error* 'list 'expected nil) (second amb_global))
+      :else (let [k (first akeys) v_amb (evaluar (first avalues) (second amb_global) amb_local)]
               (cond
-                (error? (first v_amb)) v_amb ;'(1ev (x 9 y 8 z 7))
-                (nil? k) (list (list '*error* 'cannot-set k) (second v_amb)) ;'((*error* cannot-set a) (x 9 y 8 z 7))
+                (error? (first v_amb)) v_amb
+                (nil? k) (list (list '*error* 'cannot-set k) (second v_amb))
                 ((comp not symbol?) k) (list (list '*error* 'symbol 'expected k) (second v_amb))
                 :else (set-key-value
-                        (rest akeys) ; '(b c)
-                        (rest avalues) ; '(2 3)
-                        (list (first v_amb) (actualizar-amb (second v_amb) k (first v_amb))) ;'(1ev (x 9 y 8 z 7 a 1ev))
-                        amb_local ;'(f 4 g 5 h 6)
+                        (rest akeys)
+                        (rest avalues)
+                        (list (first v_amb) (actualizar-amb (second v_amb) k (first v_amb)))
+                        amb_local
                       )
               )
             )

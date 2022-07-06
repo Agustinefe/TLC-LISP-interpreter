@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Go to root directory
-      run: cd tlc-lisp-interpreter
+      run: cd ./tlc-lisp-interpreter
     - name: Install dependencies
       run: lein deps
     - name: Run tests

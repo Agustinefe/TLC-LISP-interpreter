@@ -1008,6 +1008,7 @@
 (defn evaluar-de
   "Evalua una forma 'de'. Devuelve una lista con el resultado y un ambiente actualizado con la definicion."
   [maybe_form amb]
+  (spy "Soy evaluar de :D" maybe_form)
   (let [form (chequear-forma-de (lowercase-all-symbols maybe_form))]
     (cond
       (error? form) (list form amb)

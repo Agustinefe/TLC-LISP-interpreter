@@ -17,6 +17,8 @@ jobs:
       run: ls
     - name: Go to root directory
       run: cd ./tlc-lisp-interpreter
+    - name: Show directory (again)
+      run: ls
     - name: Install dependencies
       run: lein deps
     - name: Run tests

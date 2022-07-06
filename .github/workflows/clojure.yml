@@ -13,6 +13,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Show directory
+      run: ls
     - name: Go to root directory
       run: cd ./tlc-lisp-interpreter
     - name: Install dependencies

@@ -51,6 +51,7 @@
 (declare fnc-length)
 (declare fnc-terpri)
 (declare fnc-reverse)
+(declare fnc-second)
 
 ; Funciones auxiliares
 (declare buscar)
@@ -85,7 +86,7 @@
                eval eval exit exit first first ge ge gt gt if if lambda lambda
                length length list list listp listp load load lt lt nil nil
                not not null null or or prin3 prin3 quote quote read read
-               rest rest reverse reverse setq setq sub sub t t terpri terpri
+               rest rest reverse reverse setq setq second second sub sub t t terpri terpri
                + add - sub)))
   ([amb]
    (print ">>> ") (flush)
@@ -287,6 +288,7 @@
     (igual? fnc 'read)     (fnc-read lae)
     (igual? fnc 'rest)     (fnc-rest lae)
     (igual? fnc 'reverse)     (fnc-reverse lae)
+    (igual? fnc 'second)     (fnc-second lae)
     (igual? fnc 'sub)     (fnc-sub lae)
     (igual? fnc 'terpri)     (fnc-terpri lae)
     (igual? fnc '+)     (fnc-add lae)
@@ -1259,6 +1261,16 @@
   )
 )
 
+(defn fnc-second
+  "Devuelve el segundo elemento de una lista."
+  [lae]
+  (let [ari (controlar-aridad lae 1)]
+    (cond
+      (seq? ari) ari
+      (igual? (first lae) nil) nil
+      (not (seq? (first lae))) (list '*error* 'list 'expected (first lae))
+      ((comp not (partial = 2) count first) lae) (list '*error* 'out-of-bound (first lae))
+      :else ((comp second first) lae))))
 
 ; Al terminar de cargar el archivo en el REPL de Clojure (con load-file), se debe devolver true.
 
